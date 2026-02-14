@@ -7,144 +7,79 @@ export const EmbedGenerator: React.FC = () => {
   const [customCode, setCustomCode] = useState('');
 
   const getTemplate = (proxy: string, panic: string) => `<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Google Drive - My Files</title>
-    <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
+    <title>Google Drive</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: system-ui, -apple-system, sans-serif; }
-        iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
-        #panic-layer { position: fixed; inset: 0; background: #fff; z-index: 10000; display: none; }
-        #panic-layer iframe { width: 100%; height: 100%; border: none; }
-        .nav-dock { 
-            position: fixed; 
-            bottom: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 999; 
-            background: rgba(10,10,10,0.85); 
-            padding: 12px 24px; 
-            border-radius: 60px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            display: flex; 
-            gap: 15px; 
-            backdrop-filter: blur(20px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        .nav-dock:hover { opacity: 1; transform: translateX(-50%) translateY(-5px); }
-        input { 
-            background: rgba(255,255,255,0.08); 
-            color: #fff; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 12px 20px; 
-            border-radius: 30px; 
-            outline: none; 
-            font-size: 14px; 
-            width: 250px; 
-        }
-        button { 
-            background: #2563eb; 
-            color: #fff; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 30px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-        }
-        button:hover { background: #3b82f6; }
-        .hint { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.2); font-size: 10px; font-weight: bold; text-transform: uppercase; pointer-events: none; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; position: absolute; }
+        #panic { position: fixed; inset: 0; background: #fff; z-index: 9999; display: none; }
+        .bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; background: rgba(10,10,10,0.9); padding: 8px 15px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; backdrop-filter: blur(10px); }
+        input { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; outline: none; font-size: 12px; width: 200px; }
+        button { background: #2563eb; color: #fff; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 10px; font-weight: 800; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div id="panic-layer"><iframe src="${panicUrl}"></iframe></div>
-    <iframe id="app-frame" src="${proxy}" allow="autoplay; fullscreen; gamepad; keyboard"></iframe>
-    
-    <div class="nav-dock">
-        <input type="text" id="target-url" placeholder="Search or URL...">
-        <button onclick="launch()">Launch</button>
-        <button style="background:#333" onclick="location.reload()">Reload</button>
+    <div id="panic"><iframe src="${panicUrl}" style="width:100%;height:100%"></iframe></div>
+    <iframe id="main" src="${proxy}"></iframe>
+    <div class="bar">
+        <input type="text" id="url" placeholder="Search...">
+        <button onclick="go()">Go</button>
     </div>
-    
-    <div class="hint">Press ESC for Panic Mode</div>
-
     <script>
-        function launch() {
-            const val = document.getElementById('target-url').value;
-            if(!val) return;
-            let target = val.startsWith('http') ? val : ('https://' + val);
-            const encoded = btoa(target).replace(/\\//g, '_').replace(/\\+/g, '-').replace(/=/g, '');
-            document.getElementById('app-frame').src = "${proxy}service/" + encoded;
+        function go() {
+            const v = document.getElementById('url').value; if(!v) return;
+            let t = v.startsWith('http') ? v : ('https://' + v);
+            document.getElementById('main').src = "${proxy}service/" + btoa(t).replace(/\\//g, '_').replace(/\\+/g, '-').replace(/=/g, '');
         }
-        
-        document.getElementById('target-url').addEventListener('keypress', e => {
-            if(e.key === 'Enter') launch();
-        });
-
-        window.addEventListener('keydown', e => {
-            if(e.key === 'Escape') {
-                const p = document.getElementById('panic-layer');
-                p.style.display = p.style.display === 'block' ? 'none' : 'block';
-            }
-        });
+        window.onkeydown = e => { if(e.key === 'Escape') { const p = document.getElementById('panic'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; } };
     </script>
 </body>
 </html>`;
 
-  const getEmbedSnippet = (proxy: string) => `<iframe src="${proxy}" style="width:100%; height:100vh; border:none;" allow="autoplay; fullscreen; gamepad; keyboard"></iframe>`;
+  const getEmbedSnippet = (proxy: string) => `<iframe src="${proxy}" style="width:100%; height:100vh; border:none;" allow="autoplay; fullscreen; gamepad"></iframe>`;
 
   useEffect(() => {
     setCustomCode(activeView === 'file' ? getTemplate(proxyUrl, panicUrl) : getEmbedSnippet(proxyUrl));
   }, [proxyUrl, panicUrl, activeView]);
 
   return (
-    <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl">
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="lg:w-1/3 space-y-10">
+    <div className="bg-[#080808] border border-white/5 rounded-3xl p-6 shadow-xl max-w-4xl mx-auto">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="md:w-1/3 space-y-6">
           <div>
-            <h2 className="text-3xl font-black italic uppercase text-blue-500 tracking-tighter">Standalone <span className="text-white">Build</span></h2>
-            <p className="text-[10px] text-gray-600 font-bold uppercase mt-2 tracking-[0.2em] leading-relaxed">Generate code to run this on Wix, Google Sites, or as a local file.</p>
+            <h2 className="text-xl font-black italic uppercase text-blue-500">Site <span className="text-white">Build</span></h2>
+            <p className="text-[8px] text-gray-600 font-bold uppercase mt-1">Standalone Deployment</p>
           </div>
 
-          <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10">
-            <button onClick={() => setActiveView('file')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'file' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Roblox.html</button>
-            <button onClick={() => setActiveView('snippet')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === 'snippet' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}>Embed Code</button>
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+            <button onClick={() => setActiveView('file')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${activeView === 'file' ? 'bg-white text-black' : 'text-gray-500'}`}>Roblox.html</button>
+            <button onClick={() => setActiveView('snippet')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${activeView === 'snippet' ? 'bg-white text-black' : 'text-gray-500'}`}>Snippet</button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-500 block mb-3 tracking-widest">Active Relay</label>
-              <input type="text" value={proxyUrl} onChange={(e) => setProxyUrl(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs outline-none focus:border-blue-500 transition-all font-mono text-blue-400" />
+              <label className="text-[8px] font-black uppercase text-gray-500 block mb-2">Relay Node</label>
+              <input type="text" value={proxyUrl} onChange={(e) => setProxyUrl(e.target.value)} className="w-full bg-white/5 border border-white/5 rounded-lg px-4 py-3 text-[10px] text-blue-400 font-mono outline-none" />
             </div>
-            {activeView === 'file' && (
-              <div>
-                <label className="text-[10px] font-black uppercase text-gray-500 block mb-3 tracking-widest">Panic Redirect</label>
-                <input type="text" value={panicUrl} onChange={(e) => setPanicUrl(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs outline-none focus:border-red-500 transition-all font-mono text-red-400" />
-              </div>
-            )}
           </div>
 
           <button 
-            onClick={() => { navigator.clipboard.writeText(customCode); alert("Build copied to clipboard!"); }}
-            className="w-full py-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-500 transition-all"
+            onClick={() => { navigator.clipboard.writeText(customCode); alert("Copied!"); }}
+            className="w-full py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase shadow-lg"
           >
-            Copy Standalone Build
+            Copy Code
           </button>
         </div>
 
-        <div className="lg:w-2/3 flex flex-col">
-          <div className="flex-1 bg-black border border-white/10 rounded-[2rem] overflow-hidden flex flex-col min-h-[450px]">
-            <div className="px-6 py-4 border-b border-white/5 bg-white/5 flex justify-between items-center">
-              <span className="text-[9px] font-black text-gray-700 uppercase tracking-[0.3em]">Source Code</span>
-            </div>
+        <div className="md:w-2/3 flex flex-col">
+          <div className="flex-1 bg-black border border-white/5 rounded-2xl overflow-hidden flex flex-col min-h-[300px]">
+            <div className="px-4 py-2 border-b border-white/5 bg-white/5 text-[8px] font-black text-gray-700 uppercase">Source</div>
             <textarea 
               value={customCode}
               readOnly
-              className="flex-1 w-full p-8 bg-transparent font-mono text-[11px] text-gray-500 outline-none resize-none leading-relaxed"
+              className="flex-1 w-full p-6 bg-transparent font-mono text-[10px] text-gray-600 outline-none resize-none leading-normal"
             />
           </div>
         </div>
