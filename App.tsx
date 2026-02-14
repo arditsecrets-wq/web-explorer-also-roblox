@@ -32,15 +32,14 @@ const App: React.FC = () => {
       return;
     }
 
-    // Fixed robust encoding to prevent black page failures
-    const safeB64 = (str: string) => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(parseInt(p1, 16))));
-    const encoded = safeB64(targetUrl).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
+    // Use a simpler encoding that is known to work with basic proxy setups
+    const encoded = btoa(targetUrl).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
       
     const proxyGateway = (targetUrl.includes('mathematics.life') || targetUrl.includes('cloudmoonapp.com')) 
       ? targetUrl 
       : `${PROXY_NODE}service/${encoded}`;
 
-    // Reliable document population for about:blank
+    // Reliable document population for about:blank cloaking
     const doc = win.document;
     doc.open();
     doc.write(`
@@ -50,8 +49,8 @@ const App: React.FC = () => {
         <title>My Drive - Google Drive</title>
         <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
         <style>
-          html, body { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; background: #000; }
-          iframe { width: 100%; height: 100%; border: none; }
+          html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; }
+          iframe { width: 100%; height: 100%; border: none; margin: 0; padding: 0; position: absolute; top: 0; left: 0; }
         </style>
       </head>
       <body>
@@ -198,6 +197,4 @@ const App: React.FC = () => {
       {selectedGame && <GamePlayer game={selectedGame} onClose={() => setSelectedGame(null)} />}
     </div>
   );
-};
-
-export default App;
+};export default App;
