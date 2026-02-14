@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 export const EmbedGenerator: React.FC = () => {
@@ -6,24 +5,26 @@ export const EmbedGenerator: React.FC = () => {
   const [panicUrl, setPanicUrl] = useState('https://classroom.google.com');
   const [isEditing, setIsEditing] = useState(false);
   const [customCode, setCustomCode] = useState('');
+  const [activeView, setActiveView] = useState<'file' | 'snippet'>('file');
 
   const getTemplate = (proxy: string, panic: string) => `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>My Drive - Google Drive</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: system-ui, -apple-system, sans-serif; }
+        iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
         #panic-frame { position: fixed; inset: 0; background: #fff; z-index: 9999; display: none; }
-        .nav-overlay { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.3s; }
-        body:hover .nav-overlay { opacity: 1; }
-        input { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 10px; font-size: 12px; outline: none; width: 250px; }
-        input:focus { border-color: #3b82f6; }
-        button { background: #3b82f6; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        button.secondary { background: rgba(255,255,255,0.1); }
-        button:hover { transform: translateY(-1px); filter: brightness(1.2); }
+        .nav-overlay { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.85); padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px); opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateX(-50%) translateY(10px); }
+        body:hover .nav-overlay { opacity: 1; transform: translateX(-50%) translateY(0); }
+        input { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; font-size: 13px; outline: none; width: 220px; }
+        button { background: #3b82f6; color: #fff; border: none; padding: 8px 16px; border-radius: 50px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s; }
+        button.sec { background: rgba(255,255,255,0.1); }
+        button:hover { transform: scale(1.05); background: #2563eb; }
+        button.sec:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
@@ -31,11 +32,11 @@ export const EmbedGenerator: React.FC = () => {
     <iframe id="main-view" src="${proxy}" allow="autoplay; fullscreen; keyboard; gamepad; microphone; geolocation; clipboard-read; clipboard-write"></iframe>
     
     <div class="nav-overlay">
-        <input type="text" id="url-box" placeholder="URL or Search term...">
+        <input type="text" id="url-box" placeholder="URL or Search...">
         <button onclick="go()">Go</button>
-        <button class="secondary" onclick="setSrc('https://web.cloudmoonapp.com')">Cloud Moon</button>
-        <button class="secondary" onclick="setSrc('https://roblox.com')">Roblox</button>
-        <button class="secondary" onclick="location.reload()">Reload</button>
+        <button class="sec" onclick="setSrc('https://web.cloudmoonapp.com')">Cloud</button>
+        <button class="sec" onclick="setSrc('https://roblox.com')">Hub</button>
+        <button class="sec" onclick="location.reload()">↺</button>
     </div>
 
     <script>
@@ -77,15 +78,17 @@ export const EmbedGenerator: React.FC = () => {
 </body>
 </html>`;
 
+  const getEmbedSnippet = (proxy: string) => `<iframe src="${proxy}" style="width:100%; height:600px; border:none; border-radius:12px;" allow="autoplay; fullscreen; keyboard; gamepad;"></iframe>`;
+
   useEffect(() => {
     if (!isEditing) {
-      setCustomCode(getTemplate(proxyUrl, panicUrl));
+      setCustomCode(activeView === 'file' ? getTemplate(proxyUrl, panicUrl) : getEmbedSnippet(proxyUrl));
     }
-  }, [proxyUrl, panicUrl, isEditing]);
+  }, [proxyUrl, panicUrl, isEditing, activeView]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(customCode);
-    alert("CODE COPIED! Save as 'roblox.html'. Use ESC to hide/unhide.");
+    alert("COPIED! Paste into your site or save as .html file.");
   };
 
   return (
@@ -94,12 +97,27 @@ export const EmbedGenerator: React.FC = () => {
         <div className="lg:w-1/3 space-y-8">
           <div>
             <h2 className="text-2xl font-black italic uppercase text-blue-500">Studio <span className="text-white">Relay</span></h2>
-            <p className="text-[10px] text-gray-600 font-bold uppercase mt-2 leading-relaxed tracking-widest">Generate your personalized roblox.html file for local use.</p>
+            <p className="text-[10px] text-gray-600 font-bold uppercase mt-2 leading-relaxed tracking-widest">Deploy your standalone gateway to any platform.</p>
+          </div>
+
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+            <button 
+              onClick={() => setActiveView('file')} 
+              className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'file' ? 'bg-white text-black' : 'text-gray-500'}`}
+            >
+              Full HTML
+            </button>
+            <button 
+              onClick={() => setActiveView('snippet')} 
+              className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'snippet' ? 'bg-white text-black' : 'text-gray-500'}`}
+            >
+              Embed Snippet
+            </button>
           </div>
           
           <div className="space-y-5">
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-500 block mb-2 tracking-widest">UV Gateway Node</label>
+              <label className="text-[10px] font-black uppercase text-gray-500 block mb-2 tracking-widest">UV Proxy Node</label>
               <input 
                 type="text" 
                 value={proxyUrl} 
@@ -107,15 +125,17 @@ export const EmbedGenerator: React.FC = () => {
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white outline-none focus:border-blue-500 transition-all"
               />
             </div>
-            <div>
-              <label className="text-[10px] font-black uppercase text-gray-500 block mb-2 tracking-widest">Panic Redirect</label>
-              <input 
-                type="text" 
-                value={panicUrl} 
-                onChange={(e) => setPanicUrl(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white outline-none focus:border-blue-500 transition-all"
-              />
-            </div>
+            {activeView === 'file' && (
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-500 block mb-2 tracking-widest">Panic Redirect</label>
+                <input 
+                  type="text" 
+                  value={panicUrl} 
+                  onChange={(e) => setPanicUrl(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white outline-none focus:border-blue-500 transition-all"
+                />
+              </div>
+            )}
           </div>
 
           <div className="pt-6 space-y-3">
@@ -123,13 +143,13 @@ export const EmbedGenerator: React.FC = () => {
               onClick={() => setIsEditing(!isEditing)}
               className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest border transition-all ${isEditing ? 'bg-blue-600 border-blue-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'}`}
             >
-              {isEditing ? 'Confirm Code' : 'Modify Source'}
+              {isEditing ? 'Save Changes' : 'Edit Source'}
             </button>
             <button 
               onClick={copyCode}
               className="w-full py-5 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
             >
-              Copy roblox.html
+              Copy Code
             </button>
           </div>
         </div>
@@ -142,7 +162,9 @@ export const EmbedGenerator: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
               </div>
-              <span className="text-[9px] font-mono text-gray-600 uppercase font-black tracking-widest">standalone_client.html</span>
+              <span className="text-[9px] font-mono text-gray-600 uppercase font-black tracking-widest">
+                {activeView === 'file' ? 'roblox_standalone.html' : 'embed_code.txt'}
+              </span>
             </div>
             <textarea 
               value={customCode}

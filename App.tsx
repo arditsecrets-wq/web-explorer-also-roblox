@@ -32,14 +32,12 @@ const App: React.FC = () => {
       return;
     }
 
-    // Use a simpler encoding that is known to work with basic proxy setups
     const encoded = btoa(targetUrl).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
       
     const proxyGateway = (targetUrl.includes('mathematics.life') || targetUrl.includes('cloudmoonapp.com')) 
       ? targetUrl 
       : `${PROXY_NODE}service/${encoded}`;
 
-    // Reliable document population for about:blank cloaking
     const doc = win.document;
     doc.open();
     doc.write(`
@@ -197,4 +195,6 @@ const App: React.FC = () => {
       {selectedGame && <GamePlayer game={selectedGame} onClose={() => setSelectedGame(null)} />}
     </div>
   );
-};export default App;
+};
+
+export default App;
