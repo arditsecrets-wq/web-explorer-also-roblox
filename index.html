@@ -14,7 +14,9 @@
             margin: 0;
             overflow-x: hidden;
         }
-        /* Removed the empty root pulse to satisfy the user request for no loading screen */
+        #root {
+            min-height: 100vh;
+        }
     </style>
     <script type="importmap">
 {
@@ -32,6 +34,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
+    <!-- No manual script tag here; the system handles the index.tsx injection automatically -->
 </body>
 </html>
