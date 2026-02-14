@@ -21,15 +21,27 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onClose }) => {
       alert("Pop-up blocked! Enable them to play.");
       return;
     }
-    win.document.body.style.margin = '0';
-    const iframe = win.document.createElement('iframe');
-    iframe.style.width = '100vw';
-    iframe.style.height = '100vh';
-    iframe.style.border = 'none';
-    iframe.src = url;
-    // Removed microphone and geolocation permissions
-    iframe.allow = "autoplay; fullscreen; keyboard; gamepad";
-    win.document.body.appendChild(iframe);
+
+    // Stealth Metadata
+    const doc = win.document;
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>My Drive - Google Drive</title>
+        <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
+        <style>
+          html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+          iframe { width: 100%; height: 100%; border: none; }
+        </style>
+      </head>
+      <body>
+        <iframe src="${url}" allow="autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write"></iframe>
+      </body>
+      </html>
+    `);
+    doc.close();
     onClose();
   };
 
@@ -51,7 +63,7 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onClose }) => {
         </div>
 
         <div className="space-y-3 mb-8">
-           <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block">Select Launch Node</label>
+           <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block">Select Relay Node</label>
            <div className="grid grid-cols-1 gap-2">
               {nodes.map(n => (
                 <button 
@@ -68,12 +80,12 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onClose }) => {
         <div className="space-y-3">
           <button 
             onClick={() => unblockLaunch(activeNode)}
-            className="w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
+            className="w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl"
           >
-            Launch Unblocked
+            Launch Protected
           </button>
           <p className="text-[9px] text-gray-700 text-center font-black uppercase italic">
-            Launches in a cloaked about:blank window to hide from history.
+            Opened in cloaked window (about:blank)
           </p>
         </div>
       </div>
