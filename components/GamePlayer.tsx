@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { RobloxGame } from '../types';
 
@@ -28,7 +27,8 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onClose }) => {
     iframe.style.height = '100vh';
     iframe.style.border = 'none';
     iframe.src = url;
-    iframe.allow = "autoplay; fullscreen; keyboard; gamepad; microphone";
+    // Removed microphone and geolocation permissions
+    iframe.allow = "autoplay; fullscreen; keyboard; gamepad";
     win.document.body.appendChild(iframe);
     onClose();
   };
