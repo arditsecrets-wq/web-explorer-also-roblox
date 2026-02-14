@@ -10,7 +10,7 @@ const App: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<RobloxGame | null>(null);
   const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(false);
   const [webQuery, setWebQuery] = useState('');
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCloud, setCopiedCloud] = useState(false);
   
   // High-reliability proxy nodes
   const PROXY_NODES = [
@@ -28,8 +28,9 @@ const App: React.FC = () => {
   const CLOUD_MOON_URL = 'https://web.cloudmoonapp.com';
 
   const encodeUrl = (url: string) => {
-    // Robust Ultraviolet-style encoding
     if (!url) return "";
+    // Standard Ultraviolet XOR-style encoding is complex, 
+    // but most UV nodes accept plain Base64 for the /service/ route
     return btoa(url).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
   };
 
@@ -37,23 +38,23 @@ const App: React.FC = () => {
     if (!url) return;
     let targetUrl = url.trim();
     
-    // Auto-detect URL or Search
+    // Improved logic: Search vs URL
     if (!targetUrl.startsWith('http')) {
       if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
         targetUrl = 'https://' + targetUrl;
       } else {
+        // Use DuckDuckGo - much more reliable through proxies than Google
         targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(targetUrl)}`;
       }
     }
 
     const win = window.open('about:blank', '_blank');
     if (!win) {
-      alert("POP-UP BLOCKED: Please enable pop-ups for this site.");
+      alert("POP-UP BLOCKED: Please enable pop-ups to launch the gateway.");
       return;
     }
 
     const encoded = encodeUrl(targetUrl);
-    // CloudMoon is usually better direct, everything else via UV proxy
     const finalUrl = (targetUrl.includes('cloudmoonapp.com')) 
       ? targetUrl 
       : `${activeProxy.endsWith('/') ? activeProxy : activeProxy + '/'}service/${encoded}`;
@@ -81,14 +82,14 @@ const App: React.FC = () => {
 
   const copyCloudMoon = () => {
     navigator.clipboard.writeText(CLOUD_MOON_URL).then(() => {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
+      setCopiedCloud(true);
+      setTimeout(() => setCopiedCloud(false), 2000);
     });
   };
 
   return (
     <div className={`min-h-screen flex flex-col bg-[#020202] text-white ${selectedGame || isMarketplaceOpen ? 'overflow-hidden' : ''}`}>
-      {/* Navigation - Large & Bold */}
+      {/* Navbar */}
       <nav className="sticky top-0 z-[60] bg-black/95 backdrop-blur-md border-b border-white/5 px-8 py-5 flex items-center justify-between">
         <div className="flex items-center gap-4 cursor-pointer group" onClick={() => setActiveTab('vault')}>
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black italic shadow-xl shadow-blue-600/30 text-white text-lg transition-transform group-hover:rotate-6">R</div>
@@ -101,19 +102,21 @@ const App: React.FC = () => {
           <button onClick={() => setActiveTab('discover')} className={`px-8 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'discover' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-gray-500 hover:text-gray-300'}`}>Games</button>
         </div>
 
-        <div className="hidden lg:flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Relay Connected</span>
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+          <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Active Link</span>
         </div>
       </nav>
 
       <main className="flex-1 container mx-auto px-6 py-12 max-w-5xl">
         {activeTab === 'vault' && (
           <div className="max-w-3xl mx-auto space-y-12">
-            <div className="bg-[#080808] border border-white/10 rounded-[3rem] p-12 shadow-2xl">
+            <div className="bg-[#080808] border border-white/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent"></div>
+               
                <div className="text-center mb-10">
-                 <h2 className="text-4xl font-black uppercase italic mb-2 tracking-tighter">Access <span className="text-blue-500">Node</span></h2>
-                 <p className="text-sm text-gray-500 font-bold uppercase tracking-[0.4em]">High-Performance Stealth Gateway</p>
+                 <h2 className="text-4xl font-black uppercase italic mb-2 tracking-tighter">Secure <span className="text-blue-500">Portal</span></h2>
+                 <p className="text-sm text-gray-500 font-bold uppercase tracking-[0.4em]">High-Speed Encrypted Gateway</p>
                </div>
 
                <div className="relative mb-12">
@@ -122,8 +125,8 @@ const App: React.FC = () => {
                     value={webQuery}
                     onChange={(e) => setWebQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && unblockLaunch(webQuery)}
-                    placeholder="Enter URL or Search query..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-xl text-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all placeholder:text-gray-800 shadow-inner"
+                    placeholder="Search or Enter URL..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-xl text-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all placeholder:text-gray-800"
                   />
                   <button 
                     onClick={() => unblockLaunch(webQuery)}
@@ -137,10 +140,10 @@ const App: React.FC = () => {
                   <button onClick={() => unblockLaunch(CLOUD_MOON_URL)} className="group p-10 bg-white/5 border border-white/5 rounded-[2rem] text-left hover:bg-white/10 hover:border-blue-500/30 transition-all">
                      <div className="flex justify-between items-center mb-6">
                         <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-lg group-hover:scale-110 transition-transform">CM</div>
-                        <span className="text-xs font-black text-blue-400 bg-blue-400/10 px-4 py-1.5 rounded-full uppercase tracking-widest border border-blue-400/20">Nitro</span>
+                        <span className="text-xs font-black text-blue-400 bg-blue-400/10 px-4 py-1.5 rounded-full uppercase tracking-widest border border-blue-400/20">Official</span>
                      </div>
                      <h4 className="text-2xl font-black uppercase italic group-hover:text-blue-400 transition-colors">Cloud Player</h4>
-                     <p className="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest leading-relaxed">External Virtual VM Node</p>
+                     <p className="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest leading-relaxed">External Virtual VM Gateway</p>
                   </button>
 
                   <button onClick={() => unblockLaunch('https://google.com')} className="group p-10 bg-white/5 border border-white/5 rounded-[2rem] text-left hover:bg-white/10 hover:border-gray-500/30 transition-all">
@@ -149,24 +152,25 @@ const App: React.FC = () => {
                         <span className="text-xs font-black text-gray-500 bg-white/5 px-4 py-1.5 rounded-full uppercase tracking-widest border border-white/10">Stealth</span>
                      </div>
                      <h4 className="text-2xl font-black uppercase italic group-hover:text-gray-200 transition-colors">Private Search</h4>
-                     <p className="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest leading-relaxed">Encrypted Browser Tunnel</p>
+                     <p className="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest leading-relaxed">Encrypted Stealth Tunnel</p>
                   </button>
                </div>
 
+               {/* CLOUDMOON COPY BUTTON RESTORED */}
                <div className="flex flex-col items-center pt-10 border-t border-white/5">
-                 <p className="text-xs text-gray-600 font-black uppercase tracking-[0.2em] mb-4">Direct Cloud Link (Shareable)</p>
+                 <p className="text-xs text-gray-600 font-black uppercase tracking-[0.2em] mb-4">Direct Cloud Link (Copy & Paste)</p>
                  <div className="flex items-center gap-3 w-full max-w-md">
-                    <div className="flex-1 bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-sm font-mono text-blue-500 overflow-hidden truncate">
+                    <div className="flex-1 bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-sm font-mono text-blue-500 overflow-hidden truncate select-all">
                       {CLOUD_MOON_URL}
                     </div>
                     <button 
                       onClick={copyCloudMoon}
-                      className={`px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${copiedLink ? 'bg-green-600 text-white' : 'bg-white text-black hover:bg-gray-100'}`}
+                      className={`px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${copiedCloud ? 'bg-green-600 text-white' : 'bg-white text-black hover:bg-gray-100'}`}
                     >
-                      {copiedLink ? 'COPIED!' : 'COPY'}
+                      {copiedCloud ? 'COPIED!' : 'COPY'}
                     </button>
                  </div>
-                 <p className="mt-8 text-[10px] text-gray-700 font-black uppercase tracking-[0.4em]">Current Active Relay Node: <span className="text-blue-600">{activeProxy}</span></p>
+                 <p className="mt-8 text-[10px] text-gray-800 font-black uppercase tracking-[0.4em]">Current Relay Node: <span className="text-blue-900">{activeProxy}</span></p>
                </div>
             </div>
           </div>
@@ -176,8 +180,8 @@ const App: React.FC = () => {
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-500">
              <div className="bg-[#080808] border border-white/10 rounded-[2.5rem] p-12 shadow-2xl max-w-4xl mx-auto">
                 <div className="mb-10">
-                  <h3 className="text-3xl font-black uppercase italic mb-3 text-blue-500">System <span className="text-white">Settings</span></h3>
-                  <p className="text-sm text-gray-500 leading-relaxed font-bold uppercase tracking-widest">Select a different relay node if search or websites stop loading.</p>
+                  <h3 className="text-3xl font-black uppercase italic mb-3 text-blue-500">Relay <span className="text-white">Control</span></h3>
+                  <p className="text-sm text-gray-500 leading-relaxed font-bold uppercase tracking-widest">Select a different engine if search or websites stop loading.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
@@ -185,7 +189,7 @@ const App: React.FC = () => {
                     <button 
                       key={node.url}
                       onClick={() => setActiveProxy(node.url)}
-                      className={`p-8 rounded-[2rem] border text-left transition-all ${activeProxy === node.url ? 'bg-blue-600 border-blue-400 shadow-2xl' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
+                      className={`p-8 rounded-[2rem] border text-left transition-all ${activeProxy === node.url ? 'bg-blue-600 border-blue-400 shadow-2xl scale-105' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
                     >
                       <h5 className="text-base font-black uppercase italic mb-2 leading-none">{node.name}</h5>
                       <p className="text-[10px] text-white/40 truncate font-mono">{node.url}</p>
@@ -194,13 +198,12 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-xs font-black uppercase text-gray-600 block tracking-widest">Custom Node URL</label>
+                  <label className="text-xs font-black uppercase text-gray-600 block tracking-widest">Manual Node Link</label>
                   <input 
                     type="text" 
                     value={activeProxy}
                     onChange={(e) => setActiveProxy(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-lg font-mono text-blue-400 outline-none focus:border-blue-600 transition-all"
-                    placeholder="https://example-proxy.com/"
                   />
                 </div>
              </div>
@@ -210,19 +213,20 @@ const App: React.FC = () => {
 
         {activeTab === 'discover' && (
           <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-500">
-            <section className="rounded-[3rem] bg-gradient-to-br from-blue-900/30 to-black border border-white/10 p-20 text-center shadow-2xl">
-              <h2 className="text-6xl font-black italic uppercase mb-4 tracking-tighter">Direct <span className="text-blue-500">Launch</span></h2>
-              <p className="text-lg text-gray-400 font-bold uppercase mb-12 tracking-[0.3em]">Full Cloud Deployment System</p>
+            <section className="rounded-[3rem] bg-gradient-to-br from-blue-900/30 to-black border border-white/10 p-20 text-center shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] -mr-32 -mt-32"></div>
+              <h2 className="text-6xl font-black italic uppercase mb-4 tracking-tighter">Instant <span className="text-blue-500">Access</span></h2>
+              <p className="text-lg text-gray-400 font-bold uppercase mb-12 tracking-[0.4em]">Direct High-Performance Gaming Cloud</p>
               <div className="flex flex-wrap justify-center gap-6">
-                <button onClick={() => unblockLaunch(CLOUD_MOON_URL)} className="bg-blue-600 hover:bg-blue-500 px-16 py-6 rounded-[2rem] font-black text-sm uppercase text-white shadow-2xl shadow-blue-600/40 transition-all hover:scale-105">Launch Cloud VM</button>
-                <button onClick={() => unblockLaunch('https://roblox.com')} className="bg-white text-black hover:bg-gray-100 px-16 py-6 rounded-[2rem] font-black text-sm uppercase shadow-2xl transition-all hover:scale-105">Roblox Website</button>
+                <button onClick={() => unblockLaunch(CLOUD_MOON_URL)} className="bg-blue-600 hover:bg-blue-500 px-16 py-6 rounded-[2rem] font-black text-sm uppercase text-white shadow-2xl shadow-blue-600/40 transition-all hover:scale-105 active:scale-95">Open Cloud VM</button>
+                <button onClick={() => unblockLaunch('https://roblox.com')} className="bg-white text-black hover:bg-gray-100 px-16 py-6 rounded-[2rem] font-black text-sm uppercase shadow-2xl transition-all hover:scale-105 active:scale-95">Roblox Web</button>
               </div>
             </section>
             
             <section>
               <div className="flex items-center justify-between mb-10 px-6">
-                <h3 className="text-sm font-black uppercase text-gray-600 italic tracking-[0.5em]">Global Experiences</h3>
-                <button onClick={() => setIsMarketplaceOpen(true)} className="text-xs font-black uppercase text-blue-500 hover:underline tracking-widest">View Library</button>
+                <h3 className="text-sm font-black uppercase text-gray-600 italic tracking-[0.5em]">Trending Now</h3>
+                <button onClick={() => setIsMarketplaceOpen(true)} className="text-xs font-black uppercase text-blue-500 hover:underline tracking-widest">Full List</button>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {MOCK_GAMES.slice(0, 4).map((game) => (
@@ -239,8 +243,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="py-20 text-center border-t border-white/5 opacity-40">
-        <p className="text-[10px] font-black text-gray-700 uppercase tracking-[1em]">&copy; 2025 HUB NETWORK SYSTEMS V6</p>
+      <footer className="py-20 text-center border-t border-white/5 opacity-30">
+        <p className="text-[10px] font-black text-gray-700 uppercase tracking-[1em]">&copy; 2025 HUB V7 STANDALONE</p>
       </footer>
 
       {isMarketplaceOpen && <Marketplace onSelectGame={setSelectedGame} onClose={() => setIsMarketplaceOpen(false)} />}
