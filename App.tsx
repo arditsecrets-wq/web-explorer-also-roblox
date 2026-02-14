@@ -88,7 +88,7 @@ const App: React.FC = () => {
 
       <main className="flex-1 container mx-auto px-4 py-12 max-w-5xl">
         {activeTab === 'vault' && (
-          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-4xl mx-auto space-y-8">
             <div className="bg-[#080808] border border-white/10 rounded-[3rem] p-12 shadow-2xl">
                <div className="text-center mb-12">
                  <h2 className="text-4xl font-black uppercase italic mb-3">Web <span className="text-blue-500">Explorer</span></h2>
@@ -149,7 +149,7 @@ const App: React.FC = () => {
         {activeTab === 'studio' && <EmbedGenerator />}
 
         {activeTab === 'discover' && (
-          <div className="space-y-12 animate-in fade-in duration-500">
+          <div className="space-y-12">
             <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-900/40 via-black to-black border border-blue-500/20 p-12 text-center shadow-2xl">
               <div className="relative z-10">
                 <h2 className="text-5xl font-black italic uppercase mb-4 tracking-tighter">Secure <span className="text-blue-500">Relay</span></h2>
