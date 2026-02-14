@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MOCK_GAMES } from './constants';
 import { EmbedGenerator } from './components/EmbedGenerator';
@@ -33,42 +32,34 @@ const App: React.FC = () => {
       return;
     }
 
-    // Safe base64 encoding for URLs
-    const encoded = btoa(targetUrl)
-      .replace(/\//g, '_')
-      .replace(/\+/g, '-')
-      .replace(/=/g, '');
+    // Fixed robust encoding to prevent black page failures
+    const safeB64 = (str: string) => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(parseInt(p1, 16))));
+    const encoded = safeB64(targetUrl).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
       
     const proxyGateway = (targetUrl.includes('mathematics.life') || targetUrl.includes('cloudmoonapp.com')) 
       ? targetUrl 
       : `${PROXY_NODE}service/${encoded}`;
 
-    // Populate about:blank using robust DOM manipulation
+    // Reliable document population for about:blank
     const doc = win.document;
-    doc.title = "My Drive - Google Drive";
-    
-    // Favicon
-    const link = doc.createElement('link');
-    link.rel = 'icon';
-    link.href = 'https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png';
-    doc.head.appendChild(link);
-
-    // Body Setup
-    doc.body.style.margin = '0';
-    doc.body.style.padding = '0';
-    doc.body.style.height = '100vh';
-    doc.body.style.overflow = 'hidden';
-    doc.body.style.background = '#000';
-
-    // Create Iframe
-    const iframe = doc.createElement('iframe');
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.src = proxyGateway;
-    iframe.allow = "autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write";
-    
-    doc.body.appendChild(iframe);
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>My Drive - Google Drive</title>
+        <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
+        <style>
+          html, body { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; background: #000; }
+          iframe { width: 100%; height: 100%; border: none; }
+        </style>
+      </head>
+      <body>
+        <iframe src="${proxyGateway}" allow="autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write"></iframe>
+      </body>
+      </html>
+    `);
+    doc.close();
   };
 
   const copyToClipboard = (text: string) => {
@@ -94,7 +85,7 @@ const App: React.FC = () => {
 
         <div className="hidden md:flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-          <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter">Status: Protected</span>
+          <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter">Status: Active</span>
         </div>
       </nav>
 
@@ -104,7 +95,7 @@ const App: React.FC = () => {
             <div className="bg-[#080808] border border-white/10 rounded-[3rem] p-12 shadow-2xl">
                <div className="text-center mb-12">
                  <h2 className="text-4xl font-black uppercase italic mb-3">Web <span className="text-blue-500">Explorer</span></h2>
-                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Secure Universal Proxy</p>
+                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Encrypted Relay Node</p>
                </div>
 
                <div className="relative mb-12">
@@ -120,7 +111,7 @@ const App: React.FC = () => {
                     onClick={() => unblockLaunch(webQuery)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-500 px-8 py-3.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg text-white"
                   >
-                    Go
+                    Launch
                   </button>
                </div>
 
@@ -145,12 +136,12 @@ const App: React.FC = () => {
                </div>
 
                <div className="flex flex-col items-center pt-8 border-t border-white/5">
-                 <span className="text-[9px] font-black text-gray-700 uppercase mb-3 tracking-[0.2em]">Quick Resource Copy</span>
+                 <span className="text-[9px] font-black text-gray-700 uppercase mb-3 tracking-[0.2em]">Resource Quick-Copy</span>
                  <button 
                    onClick={() => copyToClipboard(CLOUD_MOON_URL)}
                    className={`group relative px-6 py-3 bg-white/5 border border-white/5 rounded-xl transition-all active:scale-95 flex items-center gap-3 ${copied ? 'bg-green-500/10 border-green-500/50' : 'hover:bg-white/10'}`}
                  >
-                   <code className={`font-mono text-[11px] font-bold tracking-tight transition-colors ${copied ? 'text-green-500' : 'text-blue-500'}`}>{copied ? 'COPIED!' : CLOUD_MOON_URL}</code>
+                   <code className={`font-mono text-[11px] font-bold tracking-tight transition-colors ${copied ? 'text-green-500' : 'text-blue-500'}`}>{copied ? 'COPIED TO CLIPBOARD' : CLOUD_MOON_URL}</code>
                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={copied ? 'text-green-500' : 'text-gray-600'}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                  </button>
                </div>
@@ -164,8 +155,8 @@ const App: React.FC = () => {
           <div className="space-y-12 animate-in fade-in duration-500">
             <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-900/40 via-black to-black border border-blue-500/20 p-12 text-center shadow-2xl">
               <div className="relative z-10">
-                <h2 className="text-5xl font-black italic uppercase mb-4 tracking-tighter">Stealth <span className="text-blue-500">Access</span></h2>
-                <p className="text-gray-400 text-xs font-bold uppercase mb-10 tracking-[0.2em]">Universal Experience Relay</p>
+                <h2 className="text-5xl font-black italic uppercase mb-4 tracking-tighter">Secure <span className="text-blue-500">Relay</span></h2>
+                <p className="text-gray-400 text-xs font-bold uppercase mb-10 tracking-[0.2em]">Universal Experience Portal</p>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
                   <button onClick={() => unblockLaunch(CLOUD_MOON_URL)} className="bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02] shadow-xl">
@@ -200,7 +191,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="p-12 text-center border-t border-white/5">
-        <span className="text-[9px] font-black text-gray-800 uppercase tracking-[1.5em]">&copy; 2025 Experience Portal | Standalone Gateway</span>
+        <span className="text-[9px] font-black text-gray-800 uppercase tracking-[1.5em]">&copy; 2025 Experience Portal | Universal Hub</span>
       </footer>
 
       {isMarketplaceOpen && <Marketplace onSelectGame={setSelectedGame} onClose={() => setIsMarketplaceOpen(false)} />}
