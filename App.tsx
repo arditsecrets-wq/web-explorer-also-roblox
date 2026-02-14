@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MOCK_GAMES } from './constants';
 import { EmbedGenerator } from './components/EmbedGenerator';
@@ -6,7 +7,6 @@ import { Marketplace } from './components/Marketplace';
 import { RobloxGame } from './types';
 
 const App: React.FC = () => {
-  // Web Explorer (vault) is the default home tab
   const [activeTab, setActiveTab] = useState<'discover' | 'vault' | 'studio'>('vault');
   const [selectedGame, setSelectedGame] = useState<RobloxGame | null>(null);
   const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(false);
@@ -33,7 +33,7 @@ const App: React.FC = () => {
       return;
     }
 
-    // Encoding for the proxy
+    // Safe base64 encoding for URLs
     const encoded = btoa(targetUrl)
       .replace(/\//g, '_')
       .replace(/\+/g, '-')
@@ -43,26 +43,32 @@ const App: React.FC = () => {
       ? targetUrl 
       : `${PROXY_NODE}service/${encoded}`;
 
-    // Populate about:blank with stealth metadata
+    // Populate about:blank using robust DOM manipulation
     const doc = win.document;
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>My Drive - Google Drive</title>
-        <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
-        <style>
-          html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-          iframe { width: 100%; height: 100%; border: none; }
-        </style>
-      </head>
-      <body>
-        <iframe src="${proxyGateway}" allow="autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write"></iframe>
-      </body>
-      </html>
-    `);
-    doc.close();
+    doc.title = "My Drive - Google Drive";
+    
+    // Favicon
+    const link = doc.createElement('link');
+    link.rel = 'icon';
+    link.href = 'https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png';
+    doc.head.appendChild(link);
+
+    // Body Setup
+    doc.body.style.margin = '0';
+    doc.body.style.padding = '0';
+    doc.body.style.height = '100vh';
+    doc.body.style.overflow = 'hidden';
+    doc.body.style.background = '#000';
+
+    // Create Iframe
+    const iframe = doc.createElement('iframe');
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.src = proxyGateway;
+    iframe.allow = "autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write";
+    
+    doc.body.appendChild(iframe);
   };
 
   const copyToClipboard = (text: string) => {
@@ -74,7 +80,6 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col bg-[#020202] text-white ${selectedGame || isMarketplaceOpen ? 'overflow-hidden' : ''}`}>
-      {/* Navigation */}
       <nav className="sticky top-0 z-[60] bg-black/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('vault')}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black italic shadow-lg shadow-blue-500/20 text-white">R</div>
@@ -108,7 +113,7 @@ const App: React.FC = () => {
                     value={webQuery}
                     onChange={(e) => setWebQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && unblockLaunch(webQuery)}
-                    placeholder="Search the web or enter URL..."
+                    placeholder="Search or enter URL..."
                     className="w-full bg-white/5 border-2 border-white/5 rounded-2xl px-8 py-6 text-sm text-white focus:outline-none focus:border-blue-600 transition-all placeholder:text-gray-700 shadow-inner"
                   />
                   <button 

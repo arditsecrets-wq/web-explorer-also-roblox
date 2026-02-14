@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { RobloxGame } from '../types';
 
@@ -24,24 +25,26 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onClose }) => {
 
     // Stealth Metadata
     const doc = win.document;
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>My Drive - Google Drive</title>
-        <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png">
-        <style>
-          html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-          iframe { width: 100%; height: 100%; border: none; }
-        </style>
-      </head>
-      <body>
-        <iframe src="${url}" allow="autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write"></iframe>
-      </body>
-      </html>
-    `);
-    doc.close();
+    doc.title = "My Drive - Google Drive";
+    const link = doc.createElement('link');
+    link.rel = 'icon';
+    link.href = 'https://ssl.gstatic.com/docs/doclist/images/infinite_wallpapers/invitation_24dp.png';
+    doc.head.appendChild(link);
+
+    doc.body.style.margin = '0';
+    doc.body.style.padding = '0';
+    doc.body.style.height = '100vh';
+    doc.body.style.overflow = 'hidden';
+    doc.body.style.background = '#000';
+
+    const iframe = doc.createElement('iframe');
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.src = url;
+    iframe.allow = "autoplay; fullscreen; keyboard; gamepad; clipboard-read; clipboard-write";
+    
+    doc.body.appendChild(iframe);
     onClose();
   };
 
